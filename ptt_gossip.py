@@ -15,7 +15,7 @@ path = r'./res_gossip'
 if not os.path.exists(path):
     os.mkdir(path)
 
-for i in range(0,10):
+for i in range(0,50):
     res = ss.get(url, headers=headers)
 
     soup = BeautifulSoup(res.text, 'html.parser')
@@ -37,6 +37,33 @@ for i in range(0,10):
             auth = ''
             article_name = each_title.text
             article_date = ''
+
+            # Count tag_down
+            for tag in article_soup.select('span[class="f1 hl push-tag"]'):
+                if '噓 ' in tag:
+                    tag_down += 1
+
+            # Count tag_up
+            for tag in article_soup.select('span[class="hl push-tag"]'):
+                if '推 ' in tag:
+                    tag_up += 1
+
+            # Count score
+            score = tag_up - tag_down
+
+            # Set auth
+            auth = article_soup.select('span[class="article-meta-value"]')[0].text
+
+            # Set article_date
+            article_date = article_soup.select('span[class="article-meta-value"]')[3].text
+
+            tem_str += '\n---split---\n'
+            tem_str += '推: %s\n'%(tag_up)
+            tem_str += '噓: %s\n'%(tag_down)
+            tem_str += '分數: %s\n'%(score)
+            tem_str += '作者: %s\n'%(auth)
+            tem_str += '標題: %s\n'%(article_name)
+            tem_str += '時間: %s'%(article_date)
 
             with open(path + '/' + each_title.text + '.txt', 'w', encoding='utf8') as f:
                 f.write(tem_str)
